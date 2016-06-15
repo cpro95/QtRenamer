@@ -27,7 +27,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     dirModel = new QFileSystemModel(this);
-    dirModel->setRootPath("C:/");
+    dirModel->setRootPath("/");
 
     dirModel->setFilter(QDir::AllDirs |QDir::NoDotAndDotDot | QDir::NoSymLinks);
     dirModel->sort(0,Qt::AscendingOrder);
@@ -84,7 +84,7 @@ void MainWindow::on_treeView_clicked(const QModelIndex &index)
 
     // subtitle
     subtitleFileInfoList.clear();
-    subtitleFileInfoList = movieDir.entryInfoList(QStringList() << "*.smi" << "*.smil" << "*.srt", QDir::Files | QDir::NoSymLinks | QDir::NoDotAndDotDot);
+    subtitleFileInfoList = movieDir.entryInfoList(QStringList() << "*.smi" << "*.smil" << "*.srt" << "*.ass", QDir::Files | QDir::NoSymLinks | QDir::NoDotAndDotDot);
     subtitleList.clear();
     for(int i=0; i < subtitleFileInfoList.size();i++)
     {
@@ -224,6 +224,19 @@ void MainWindow::on_movieDeleteButton_clicked()
     movieFileInfoList.removeAt(index.row());
     movieList.removeAt(index.row());
     movieModel->setStringList(movieList);
+
+//    qDebug() << index.row();
+//    qDebug() << movieList.size();
+    if(index.row() == movieList.size())
+    {
+        // 커서가 마지막에 있다는 얘기 즉 index.row()-1
+        ui->listView->setCurrentIndex(movieModel->index(index.row()-1,0));
+    } else
+    {
+        // 커서를 다음으로 이동한다.
+        ui->listView->setCurrentIndex(movieModel->index(index.row(),0));
+    }
+
 }
 
 void MainWindow::on_subtitleDeleteButton_clicked()
@@ -238,6 +251,19 @@ void MainWindow::on_subtitleDeleteButton_clicked()
     subtitleFileInfoList.removeAt(index.row());
     subtitleList.removeAt(index.row());
     subtitleModel->setStringList(subtitleList);
+
+    //    qDebug() << index.row();
+    //    qDebug() << subtitleList.size();
+    if(index.row() == subtitleList.size())
+    {
+        // 커서가 마지막에 있다는 얘기 즉 index.row()-1
+        ui->listView_2->setCurrentIndex(subtitleModel->index(index.row()-1,0));
+    } else
+    {
+        // 커서를 다음으로 이동한다.
+        ui->listView_2->setCurrentIndex(subtitleModel->index(index.row(),0));
+    }
+
 }
 
 void MainWindow::on_movieUpButton_clicked()
@@ -260,6 +286,9 @@ void MainWindow::on_movieUpButton_clicked()
 
         putMsg("swap has been done");
         movieModel->setStringList(movieList);
+
+        //커서를 한칸 위로 이동시킨다.
+        ui->listView->setCurrentIndex(movieModel->index(index.row()-1,0));
     }
 
 }
@@ -284,6 +313,9 @@ void MainWindow::on_subtitleUpButton_clicked()
 
         putMsg("swap has been done");
         subtitleModel->setStringList(subtitleList);
+
+        //커서를 한칸 위로 이동시킨다.
+        ui->listView_2->setCurrentIndex(subtitleModel->index(index.row()-1,0));
     }
 }
 
@@ -307,6 +339,9 @@ void MainWindow::on_movieDownButton_clicked()
 
         putMsg("swap has been done");
         movieModel->setStringList(movieList);
+
+        //커서를 한칸 아래로 이동시킨다
+        ui->listView->setCurrentIndex(movieModel->index(index.row()+1,0));
     }
 }
 
@@ -330,6 +365,9 @@ void MainWindow::on_subtitleDownButton_clicked()
 
         putMsg("swap has been done");
         subtitleModel->setStringList(subtitleList);
+
+        //커서를 한칸 아래로 이동시킨다.
+        ui->listView_2->setCurrentIndex(subtitleModel->index(index.row()+1,0));
     }
 }
 
