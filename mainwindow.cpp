@@ -26,13 +26,23 @@ MainWindow::MainWindow(QWidget *parent) :
     setWindowTitle("QtRenamer");
 
 
+    // FileSystemModel 을 dirModel 로 할당하고
+    // dirModel 이 관할하는 하위 파일 시스템을 setRootPath로 지정한다.
+    // 처음 실행은 사용자의 홈폴더로 정했다.
     dirModel = new QFileSystemModel(this);
-    dirModel->setRootPath("/");
+//    dirModel->setRootPath(QDir::rootPath());
+    dirModel->setRootPath(QDir::homePath());
 
     dirModel->setFilter(QDir::AllDirs |QDir::NoDotAndDotDot | QDir::NoSymLinks);
     dirModel->sort(0,Qt::AscendingOrder);
 
+    // view 의 모텔을 dirModel로 정하고
+    // 뷰의 루트 인덱스를 모텔의 인덱스로 지정한다.
+    // 뷰의 루트 인덱스 지정없이는 뷰가 제대로 작동 안된다.
+
     ui->treeView->setModel(dirModel);
+//    ui->treeView->setRootIndex(dirModel->index(QDir::rootPath()));
+    ui->treeView->setRootIndex(dirModel->index(QDir::homePath()));
     ui->treeView->hideColumn(1);
     ui->treeView->hideColumn(2);
     ui->treeView->hideColumn(3);
@@ -173,35 +183,37 @@ void MainWindow::doRename2() // rename movie file by subtitle
 void MainWindow::dropEvent(QDropEvent *event)
 {
 //    const QMimeData *mimeData = event->mimeData();
-
-//    if(mimeData->hasUrls())
-//    {
-//        putMsg("Urls");
-//    }
+//    qDebug() << mimeData->text();
+//    qDebug() << mimeData->hasUrls();
 
     QList<QUrl> urls = event->mimeData()->urls();
-        foreach(QUrl url, urls)
-        {
-            //qDebug()<<url.toString();
-        }
 
-//    QString path = path1.adjusted(QUrl::RemoveFilename).toString();
-//    putMsg(path);
-
+//    foreach(QUrl url, urls)
+//    {
+//        qDebug()<<url.toString();
+//    }
 
     // 첫번째 파일에서 경로를 얻는다.
     QFileInfo urlfile(urls.at(0).toLocalFile());
-    putMsg(urlfile.path());
 
 //    qDebug() << urlfile.absoluteFilePath();
 //    qDebug() << urlfile.absolutePath();
-//    qDebug() << urlfile.path();
+//    qDebug() << urlfile.path() + "/..";
+
+    // 꼭 dirModel 의 RootPath를 먼저 지정하고
+    // view 의 RootIndex를 지정하는 방식이다.
+    // 원하는 디렉토리를 보여줄려면 원하는 디렉토리의 바로전 디렉토리를
+    // RootPath로 지정해야 한다.
+    QString newPath = urlfile.path() + "/..";
+
+    dirModel->setRootPath(newPath);
+    ui->treeView->setRootIndex(dirModel->index(newPath));
 
     // 트리뷰의 currentIndex를 조정하고
-    ui->treeView->scrollTo(dirModel->index(urlfile.path()));
+    ui->treeView->scrollTo(dirModel->index(urlfile.absolutePath()));
 
     // 해당 treeview를 클릭한 것처럼 함수 호출
-    on_treeView_clicked(dirModel->index(urlfile.path()));
+    on_treeView_clicked(dirModel->index(urlfile.absolutePath()));
 
 
 }
